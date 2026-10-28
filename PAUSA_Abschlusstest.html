@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAUSA - Anti-Phishing Programme</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        pausa: {
+                            navy: '#0f172a', /* Tailwind slate-900 */
+                            blue: '#1e3a8a', /* Tailwind blue-900 */
+                            light: '#f8fafc',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Custom Radio Button Styles */
+        .option-radio:checked + div {
+            border-color: #0f172a;
+            background-color: #f8fafc;
+        }
+        .option-radio:checked + div .radio-inner {
+            background-color: #0f172a;
+            border-color: #0f172a;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-8 text-slate-800">
+
+    <div class="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden relative flex flex-col">
+        
+        <!-- Header -->
+        <div class="bg-pausa-navy text-white p-6 sm:p-8 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">PAUSA</h1>
+                <p class="text-slate-300 mt-1 font-medium text-sm tracking-wide uppercase">Anti-Phishing Programme</p>
+            </div>
+            <div id="header-progress" class="hidden mt-4 sm:mt-0 text-slate-300 text-sm font-semibold">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <div id="content-area" class="p-6 sm:p-10 max-h-[75vh] overflow-y-auto">
+
+            <!-- 1. Start Screen -->
+            <div id="start-screen" class="text-center py-10 fade-in">
+                <h2 class="text-3xl font-semibold mb-4 text-pausa-navy">Final Assessment</h2>
+                <p class="text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed text-lg">
+                    Welcome to the PAUSA Final Assessment. This quiz consists of 6 chapters, each containing 5 practical scenarios. You must answer all questions in a chapter to proceed. Your answers will help solidify the security habits required in our daily operations.
+                </p>
+                <button onclick="startQuiz()" class="bg-pausa-blue hover:bg-blue-800 text-white font-semibold py-3 px-10 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg">
+                    Start Assessment
+                </button>
+            </div>
+
+            <!-- 2. Chapter Screen (Questions) -->
+            <div id="chapter-screen" class="hidden fade-in">
+                <div class="mb-8 border-b border-slate-200 pb-4">
+                    <h2 id="chapter-title" class="text-2xl font-bold text-pausa-navy">Chapter Title</h2>
+                    <p class="text-slate-500 mt-1">Please answer all 5 questions to proceed.</p>
+                </div>
+
+                <div id="questions-container" class="space-y-10 mb-8">
+                    <!-- Questions injected via JS -->
+                </div>
+
+                <div class="flex justify-end pt-6 border-t border-slate-200">
+                    <button id="submit-chapter-btn" onclick="submitChapter()" disabled class="bg-pausa-navy hover:bg-slate-800 text-white font-semibold py-3 px-8 rounded-lg shadow transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-500">
+                        Submit Chapter
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Chapter Feedback Screen -->
+            <div id="feedback-screen" class="hidden fade-in">
+                <div class="text-center mb-10 border-b border-slate-200 pb-8">
+                    <h2 class="text-2xl font-bold text-pausa-navy mb-4">Chapter Results</h2>
+                    <div id="chapter-score-badge" class="inline-flex items-center justify-center px-6 py-3 rounded-full text-xl font-bold shadow-sm">
+                        <!-- Score injected here -->
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold text-slate-800">Detailed Feedback</h3>
+                    <p class="text-slate-500 text-sm">Review your answers and understand the PAUSA rules.</p>
+                </div>
+
+                <div id="feedback-container" class="space-y-8 mb-10">
+                    <!-- Feedback injected via JS -->
+                </div>
+
+                <div class="flex justify-end pt-6 border-t border-slate-200">
+                    <button id="next-chapter-btn" onclick="nextChapter()" class="bg-pausa-blue hover:bg-blue-800 text-white font-semibold py-3 px-8 rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Next Chapter
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. Final Results Screen -->
+            <div id="final-screen" class="hidden py-10 text-center fade-in">
+                <div class="w-32 h-32 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-6 shadow-inner border-4 border-pausa-navy">
+                    <span id="final-score" class="text-4xl font-bold text-pausa-navy">0/30</span>
+                </div>
+                <h2 id="final-title" class="text-3xl font-bold text-slate-800 mb-4">Assessment Complete</h2>
+                <p id="final-subtitle" class="text-slate-600 mb-10 max-w-xl mx-auto text-lg leading-relaxed">
+                    Thank you for completing the PAUSA anti-phishing programme assessment. Your team is your best firewall.
+                </p>
+                
+                <button onclick="generateCertificate()" class="bg-pausa-navy hover:bg-slate-800 text-white font-semibold py-4 px-10 rounded-lg shadow-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 text-lg flex items-center justify-center mx-auto space-x-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Generate Training Certificate</span>
+                </button>
+                
+                <button onclick="location.reload()" class="mt-6 text-slate-500 hover:text-slate-800 font-medium underline">
+                    Restart Assessment
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- 1. QUIZ DATA ---
+        const quizData = [
+            {
+                title: "Chapter 1: Recognising Phishing",
+                questions: [
+                    {
+                        text: "What is the most important first step when you receive an urgent or unexpected email?",
+                        options: ["Delete it immediately", "Pause for ten seconds", "Forward it to all colleagues"],
+                        correctIndex: 1,
+                        explanation: "The first PAUSA rule is to pause for ten seconds. Phishing relies on creating pressure."
+                    },
+                    {
+                        text: "How can you check where a link really leads without clicking it?",
+                        options: ["Copy and paste it into a search engine", "Trust the text written in the email", "Rest your mouse on it or press and hold on a phone"],
+                        correctIndex: 2,
+                        explanation: "Hovering over a link reveals the true destination address in the corner of your browser before you commit to clicking."
+                    },
+                    {
+                        text: "If an email has just ONE of the seven warning signs, what should you do?",
+                        options: ["Pause and check; one sign is enough", "Ignore it unless it has at least three signs", "Assume it is safe if it comes from a known name"],
+                        correctIndex: 0,
+                        explanation: "One sign is enough to pause. You do not need to be absolutely sure it is phishing to stop and check."
+                    },
+                    {
+                        text: "Which of these email attachments is a major warning sign?",
+                        options: ["A standard PDF file", "Unexpected .zip, .html, or documents asking to 'enable content'", "An image file"],
+                        correctIndex: 1,
+                        explanation: "These specific file types are commonly used by attackers to deliver malware or open fake login pages."
+                    },
+                    {
+                        text: "A sender's name says 'Dr. Silva', but the address is 'dr.silva.law@gmail.com'. What is the PAUSA rule here?",
+                        options: ["Check the address, not the name", "Trust it if you know a Dr. Silva", "Reply to ask if it is real"],
+                        correctIndex: 0,
+                        explanation: "Anyone can type 'Dr. Silva' as the display name. Always look at the real sender address to verify the source."
+                    }
+                ]
+            },
+            {
+                title: "Chapter 2: Invoices and Payments",
+                questions: [
+                    {
+                        text: "A supplier emails you to say their bank account has changed. What is the PAUSA call-back rule?",
+                        options: ["Confirm by replying to the email", "Confirm by phone using a number you already have on file", "Call the new number provided in the email signature"],
+                        correctIndex: 1,
+                        explanation: "Bank details should only change after a phone call to a verified number, never one provided in the suspicious email."
+                    },
+                    {
+                        text: "A partner asks by email for an urgent, confidential transfer. What do you do?",
+                        options: ["Process it quickly because they are a partner", "Confirm in person or by phone on a known number", "Send the money but tell a colleague"],
+                        correctIndex: 1,
+                        explanation: "Urgency plus secrecy means stop. No genuine partner asks you to skip the usual process and keep quiet about it."
+                    },
+                    {
+                        text: "What is the 'four-eyes rule' for payments?",
+                        options: ["Payments above a set amount need a second person to approve", "You must check the invoice four times", "IT must approve all payments"],
+                        correctIndex: 0,
+                        explanation: "A secondary approval acts as a vital safety net against fake invoice fraud."
+                    },
+                    {
+                        text: "You notice you paid a fake invoice an hour ago. What is your very first step?",
+                        options: ["Wait and see if the money bounces back", "Call the bank's business line at once", "Delete the email so the hackers lose access"],
+                        correctIndex: 1,
+                        explanation: "The first hours decide whether a transfer can still be stopped or recalled by the bank."
+                    },
+                    {
+                        text: "Why is it dangerous to call the phone number provided at the bottom of a suspicious email?",
+                        options: ["The number will charge you premium rates", "The attacker controls that number and will pretend to be the supplier", "It will infect your phone"],
+                        correctIndex: 1,
+                        explanation: "Attackers set up fake phone lines to confirm their own fraudulent requests."
+                    }
+                ]
+            },
+            {
+                title: "Chapter 3: Accounts and Passwords",
+                questions: [
+                    {
+                        text: "A login page looks exactly like your email provider's portal. How can you tell if it is real?",
+                        options: ["Look for the logo quality", "Only the address bar shows the truth", "If it asks for a password, it is real"],
+                        correctIndex: 1,
+                        explanation: "Fake login pages copy real ones perfectly. You must verify the actual URL in the address bar."
+                    },
+                    {
+                        text: "You receive an email from 'IT Support' with a link to 'Secure your account'. What is the PAUSA rule?",
+                        options: ["Never log in from a link; type the address yourself", "Click the link but use an old password", "Forward it to the boss"],
+                        correctIndex: 0,
+                        explanation: "You should always navigate to services via your own saved bookmarks or by typing the address manually."
+                    },
+                    {
+                        text: "What is the best way to block attacks that use stolen passwords?",
+                        options: ["Two-factor authentication (2FA)", "Changing your password every week", "Hiding your email address"],
+                        correctIndex: 0,
+                        explanation: "2FA requires an additional code or app confirmation, meaning a stolen password alone is no longer enough to get in."
+                    },
+                    {
+                        text: "Your phone asks you to approve a 2FA sign-in that you did not start. What do you do?",
+                        options: ["Approve it, it is probably a colleague", "Ignore it completely", "Deny it and tell the office contact immediately"],
+                        correctIndex: 2,
+                        explanation: "An unexpected 2FA prompt means someone else has your password and is actively trying to log in."
+                    },
+                    {
+                        text: "How should you manage passwords for different work services?",
+                        options: ["Use one very complex password for everything", "Use a password manager for different, strong passwords everywhere", "Write them on a post-it note"],
+                        correctIndex: 1,
+                        explanation: "A password manager securely stores unique passwords for every service, minimizing damage if one service is breached."
+                    }
+                ]
+            },
+            {
+                title: "Chapter 4: Phone, Text Messages and WhatsApp",
+                questions: [
+                    {
+                        text: "You receive a text message saying a parcel is held and you must pay a €1.99 customs fee. What do you do?",
+                        options: ["Pay it quickly, it's a small amount", "Don't click; check on the courier's official website", "Reply 'STOP'"],
+                        correctIndex: 1,
+                        explanation: "Smishing relies on small fees to make you act without thinking. Always verify via the official website."
+                    },
+                    {
+                        text: "A caller from 'your bank' asks you to read out a security code you just received. What do you do?",
+                        options: ["Read it out, the bank needs it", "Read only half of it", "Hang up and call the bank on the number on your card"],
+                        correctIndex: 2,
+                        explanation: "Real banks will never ask you to read back a security authorization code over the phone."
+                    },
+                    {
+                        text: "'Technical support' calls and asks you to install a remote-access program so they can fix an error. What do you do?",
+                        options: ["Install it, they are the experts", "Refuse and call your own computer support provider", "Install it but watch their actions closely"],
+                        correctIndex: 1,
+                        explanation: "This is a common Vishing scam. Never grant remote access to an unsolicited caller."
+                    },
+                    {
+                        text: "You receive a WhatsApp from an unknown number saying 'Hi Mum/Dad, my phone broke and I urgently need money.' What is this?",
+                        options: ["A genuine emergency", "The 'Hi Mum, Hi Dad' scam", "A network error"],
+                        correctIndex: 1,
+                        explanation: "Attackers pretend to be family members in distress to bypass security checks through emotional manipulation."
+                    },
+                    {
+                        text: "What is the PAUSA rule for giving codes or card data over the phone?",
+                        options: ["Never give them on the phone", "Only give them if the caller knows your name", "Whisper them so no one else hears"],
+                        correctIndex: 0,
+                        explanation: "No legitimate organization will demand sensitive card data or authentication codes during a cold call."
+                    }
+                ]
+            },
+            {
+                title: "Chapter 5: Client Data and Documents",
+                questions: [
+                    {
+                        text: "Before pressing 'send' on an email containing client documents, what should you do?",
+                        options: ["BCC yourself", "Read the full recipient address once", "Compress the files"],
+                        correctIndex: 1,
+                        explanation: "Autocomplete mistakes are common. Checking the full address ensures sensitive data doesn't go to the wrong person."
+                    },
+                    {
+                        text: "A client you know sends an unexpected link to 'open a shared file'. What do you do?",
+                        options: ["Open it, you know the client", "Confirm with the client by phone before opening", "Forward it to a colleague to test"],
+                        correctIndex: 1,
+                        explanation: "The client's email account may have been compromised. Always verify unexpected shared documents out-of-band."
+                    },
+                    {
+                        text: "How quickly might the office need to notify the data protection authority if a phishing attack causes a personal data breach?",
+                        options: ["Within 24 hours", "Within 72 hours", "Within one month"],
+                        correctIndex: 1,
+                        explanation: "Under the General Data Protection Regulation (GDPR), breaches likely to create a risk must be reported within a strict 72-hour window."
+                    },
+                    {
+                        text: "Why are accounting and law offices particularly attractive targets for cybercriminals?",
+                        options: ["They have poor IT systems", "They hold tax data, identity documents, bank details, and contracts", "They process a high volume of emails"],
+                        correctIndex: 1,
+                        explanation: "Offices hold exactly the sensitive and financial data that criminals want to steal or extort."
+                    },
+                    {
+                        text: "How should highly sensitive files be sent according to the modules?",
+                        options: ["As standard PDF attachments", "Using an agreed protected method, like a password sent via another channel", "Only via USB stick"],
+                        correctIndex: 1,
+                        explanation: "Separating the encrypted file from its password across different communication channels severely limits interception risks."
+                    }
+                ]
+            },
+            {
+                title: "Chapter 6: When Something Goes Wrong",
+                questions: [
+                    {
+                        text: "You clicked a suspicious link and entered your password. What is the absolute first thing you should do?",
+                        options: ["Clear your browser history", "Tell the office contact now and change the password from another device", "Wait and see if anything happens"],
+                        correctIndex: 1,
+                        explanation: "Immediate containment is critical. Changing the password locks the attacker out before they can act."
+                    },
+                    {
+                        text: "In the PAUSA program, what is considered the only real mistake regarding a suspicious email?",
+                        options: ["Clicking a link", "Silence; failing to report it", "Deleting it permanently"],
+                        correctIndex: 1,
+                        explanation: "Anyone can make a mistake. Nobody is blamed for reporting an error, but staying silent guarantees the attacker succeeds."
+                    },
+                    {
+                        text: "You are not 100% sure whether an email is phishing, but it feels slightly off. What do you do?",
+                        options: ["Ignore it", "Delete it", "Report it to the office contact"],
+                        correctIndex: 2,
+                        explanation: "Reporting is always the right action. It is better to have a false alarm than a missed breach."
+                    },
+                    {
+                        text: "Why should you report a suspicious email even if you didn't click anything and already deleted it?",
+                        options: ["To prove you were working", "Because colleagues may have received the same email", "Because IT needs to clear your trash folder"],
+                        correctIndex: 1,
+                        explanation: "Reporting allows the office contact to warn the rest of the team and potentially block the sender organization-wide."
+                    },
+                    {
+                        text: "What does the PAUSA 30-minute plan emphasize above all else when an incident happens?",
+                        options: ["Finding out who is to blame", "Speed matters more than blame", "Punishing the attacker"],
+                        correctIndex: 1,
+                        explanation: "A fast report within minutes can stop a payment or lock a compromised account before actual damage occurs."
+                    }
+                ]
+            }
+        ];
+
+        // --- 2. STATE ---
+        let currentChapterIndex = 0;
+        let currentChapterSelections = []; // array of selected option indices (length 5)
+        let allScores = []; // Array to hold scores of each chapter [4, 5, 3, ...]
+        let allUserAnswers = []; // Store answers for final review if needed
+
+        // --- 3. DOM ELEMENTS ---
+        const screens = {
+            start: document.getElementById('start-screen'),
+            chapter: document.getElementById('chapter-screen'),
+            feedback: document.getElementById('feedback-screen'),
+            final: document.getElementById('final-screen')
+        };
+        const contentArea = document.getElementById('content-area');
+        
+        // --- 4. FUNCTIONS ---
+
+        function switchScreen(screenKey) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[screenKey].classList.remove('hidden');
+            screens[screenKey].classList.remove('fade-in');
+            void screens[screenKey].offsetWidth; // trigger reflow
+            screens[screenKey].classList.add('fade-in');
+            contentArea.scrollTop = 0; // scroll to top
+        }
+
+        function updateHeaderProgress() {
+            const headerProgress = document.getElementById('header-progress');
+            if (currentChapterIndex < quizData.length && !screens.final.classList.contains('fade-in')) {
+                headerProgress.classList.remove('hidden');
+                headerProgress.innerText = `CHAPTER ${currentChapterIndex + 1} OF ${quizData.length}`;
+            } else {
+                headerProgress.classList.add('hidden');
+            }
+        }
+
+        function startQuiz() {
+            currentChapterIndex = 0;
+            allScores = [];
+            allUserAnswers = [];
+            loadChapter();
+        }
+
+        function loadChapter() {
+            const chapter = quizData[currentChapterIndex];
+            currentChapterSelections = new Array(chapter.questions.length).fill(null);
+            
+            document.getElementById('chapter-title').innerText = chapter.title;
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            chapter.questions.forEach((q, qIndex) => {
+                const questionBlock = document.createElement('div');
+                questionBlock.className = "bg-slate-50 border border-slate-200 rounded-xl p-6 shadow-sm";
+                
+                let optionsHTML = '';
+                const alphabet = ['A', 'B', 'C'];
+                
+                q.options.forEach((opt, optIndex) => {
+                    optionsHTML += `
+                        <label class="block relative cursor-pointer group mt-3">
+                            <input type="radio" name="q_${qIndex}" value="${optIndex}" class="option-radio sr-only" onchange="handleSelection(${qIndex}, ${optIndex})">
+                            <div class="p-4 border-2 border-slate-200 bg-white rounded-lg flex items-start space-x-4 transition-all duration-200 hover:border-slate-400">
+                                <div class="flex-shrink-0 mt-0.5">
+                                    <div class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center radio-inner transition-colors duration-200">
+                                        <div class="w-2.5 h-2.5 rounded-full bg-white"></div>
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <span class="font-bold text-pausa-navy mr-2">${alphabet[optIndex]}:</span>
+                                    <span class="text-slate-700">${opt}</span>
+                                </div>
+                            </div>
+                        </label>
+                    `;
+                });
+
+                questionBlock.innerHTML = `
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4 leading-snug"><span class="text-pausa-blue mr-2">Q${qIndex + 1}.</span>${q.text}</h3>
+                    <div class="space-y-2">
+                        ${optionsHTML}
+                    </div>
+                `;
+                container.appendChild(questionBlock);
+            });
+
+            document.getElementById('submit-chapter-btn').disabled = true;
+            switchScreen('chapter');
+            updateHeaderProgress();
+        }
+
+        function handleSelection(qIndex, optIndex) {
+            currentChapterSelections[qIndex] = optIndex;
+            checkChapterCompletion();
+        }
+
+        function checkChapterCompletion() {
+            const isComplete = currentChapterSelections.every(val => val !== null);
+            document.getElementById('submit-chapter-btn').disabled = !isComplete;
+        }
+
+        function submitChapter() {
+            const chapter = quizData[currentChapterIndex];
+            let chapterScore = 0;
+            const chapterResults = [];
+
+            currentChapterSelections.forEach((selectedIdx, qIdx) => {
+                const q = chapter.questions[qIdx];
+                const isCorrect = (selectedIdx === q.correctIndex);
+                if (isCorrect) chapterScore++;
+                
+                chapterResults.push({
+                    questionText: q.text,
+                    selectedOption: q.options[selectedIdx],
+                    correctOption: q.options[q.correctIndex],
+                    isCorrect: isCorrect,
+                    explanation: q.explanation
+                });
+            });
+
+            allScores.push(chapterScore);
+            allUserAnswers.push(chapterResults);
+            
+            showChapterFeedback(chapter, chapterScore, chapterResults);
+        }
+
+        function showChapterFeedback(chapter, score, results) {
+            // Setup Score Badge
+            const badge = document.getElementById('chapter-score-badge');
+            badge.innerText = `You scored ${score}/${chapter.questions.length}`;
+            
+            badge.className = "inline-flex items-center justify-center px-6 py-3 rounded-full text-xl font-bold shadow-sm border-2";
+            if (score === chapter.questions.length) {
+                badge.classList.add('bg-green-100', 'text-green-800', 'border-green-300');
+            } else if (score >= 3) {
+                badge.classList.add('bg-orange-100', 'text-orange-800', 'border-orange-300');
+            } else {
+                badge.classList.add('bg-red-100', 'text-red-800', 'border-red-300');
+            }
+
+            // Setup Details
+            const container = document.getElementById('feedback-container');
+            container.innerHTML = '';
+
+            results.forEach((res, idx) => {
+                const iconHTML = res.isCorrect 
+                    ? `<svg class="w-7 h-7 text-green-600 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>`
+                    : `<svg class="w-7 h-7 text-red-600 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
+                let answerFeedback = '';
+                if (!res.isCorrect) {
+                    answerFeedback = `
+                        <div class="mt-3 text-sm bg-red-50 p-3 rounded-md border border-red-100">
+                            <div class="mb-1"><span class="font-bold text-red-800">Your answer:</span> <span class="text-red-900">${res.selectedOption}</span></div>
+                            <div><span class="font-bold text-green-800">Correct answer:</span> <span class="text-green-900">${res.correctOption}</span></div>
+                        </div>
+                    `;
+                } else {
+                    answerFeedback = `
+                        <div class="mt-3 text-sm bg-green-50 p-3 rounded-md border border-green-100">
+                            <div><span class="font-bold text-green-800">Your answer:</span> <span class="text-green-900">${res.selectedOption}</span></div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML += `
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-sm flex space-x-4 items-start">
+                        ${iconHTML}
+                        <div class="flex-grow">
+                            <h4 class="font-semibold text-slate-800 text-[1.05rem] leading-snug mb-2">${idx + 1}. ${res.questionText}</h4>
+                            ${answerFeedback}
+                            <div class="mt-4 bg-slate-50 border-l-4 border-pausa-navy p-4 rounded-r-lg">
+                                <h5 class="text-xs uppercase font-bold text-slate-500 tracking-wider mb-1">PAUSA Explanation</h5>
+                                <p class="text-sm text-slate-800 font-medium leading-relaxed">${res.explanation}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const nextBtn = document.getElementById('next-chapter-btn');
+            if (currentChapterIndex === quizData.length - 1) {
+                nextBtn.innerText = "View Final Results";
+            } else {
+                nextBtn.innerText = "Next Chapter";
+            }
+
+            switchScreen('feedback');
+        }
+
+        function nextChapter() {
+            currentChapterIndex++;
+            if (currentChapterIndex < quizData.length) {
+                loadChapter();
+            } else {
+                showFinalResults();
+            }
+        }
+
+        function showFinalResults() {
+            const totalScore = allScores.reduce((a, b) => a + b, 0);
+            const totalQuestions = quizData.reduce((acc, chap) => acc + chap.questions.length, 0);
+            
+            document.getElementById('final-score').innerText = `${totalScore}/${totalQuestions}`;
+            document.getElementById('header-progress').classList.add('hidden'); // Hide progress
+
+            const title = document.getElementById('final-title');
+            const subtitle = document.getElementById('final-subtitle');
+            
+            if (totalScore === totalQuestions) {
+                title.innerText = "Exceptional Work!";
+                subtitle.innerText = "You have demonstrated a perfect understanding of the PAUSA security protocols. Your diligence keeps the office secure.";
+            } else if (totalScore >= 24) { // 80% passing
+                title.innerText = "Great Job!";
+                subtitle.innerText = "You have a solid grasp of the PAUSA rules. Keep these habits in mind to protect your team and clients.";
+            } else {
+                title.innerText = "Assessment Complete";
+                subtitle.innerText = "We recommend reviewing the PAUSA modules to strengthen your security habits. Remember: Pause, Check, Then Click.";
+            }
+
+            switchScreen('final');
+        }
+
+        function generateCertificate() {
+            alert("Certificate Generation Process Initiated.\n\nIn a live environment, this would generate a PDF mapping to your training record for auditors and insurers.");
+        }
+    </script>
+</body>
+</html>
